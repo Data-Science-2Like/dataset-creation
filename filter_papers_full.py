@@ -45,7 +45,7 @@ def filter_by_metadata(ab):
 if __name__ == "__main__":
     # Get all of the statistics for venues, also time how long it takes to iterate through all the data
     start = time.time()
-    ("../filtered_metadata").mkdir(exist_ok=True)
+    Path("../filtered_metadata").mkdir(exist_ok=True)
 
     article_bundles = []
     for article_bundle in data_loc.glob(f"metadata/*.gz"):
