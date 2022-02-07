@@ -12,12 +12,12 @@ from collections import defaultdict
 from pathlib import Path
 
 
-data_loc = Path('./data/s2orc_full/20200705v1/full/')
+data_loc = Path('../20200705v1/full/')
 
 
 def index_metadata(ab):
     article_id_to_metadata = {}
-    with gzip.open(f"{data_loc}/filtered_metadata/metadata_{ab}.jsonl.gz") as f:
+    with gzip.open(f"../filtered_metadata/metadata_{ab}.jsonl.gz") as f:
         for i, l in enumerate(f):
             metadata = json.loads(l.strip())
             article_id_to_metadata[metadata['paper_id']] = metadata
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     pool = Pool(8)
     venue_frequencies = defaultdict(int)
     for vf in tqdm(pool.imap_unordered(index_metadata, range(100)), total=100):
-        with gzip.open(f"{data_loc}/filtered_metadata/metadata_{vf[0]}.jsonl.gz", 'wt') as f:
+        with gzip.open(f"../filtered_metadata/metadata_{vf[0]}.jsonl.gz", 'wt') as f:
             for l in vf[1]:
                 f.write(json.dumps(l) + '\n')
     pool.close()
