@@ -38,7 +38,7 @@ def get_true_token_index(chars_to_tokens, index, val=0):
 
 
 def get_permissible_title_list():
-    with open('./data/permissible_section_titles.txt') as f:
+    with open('./permissible_section_titles.txt') as f:
         titles = [l.strip() for l in f]
     return titles
 
@@ -69,7 +69,8 @@ def create_doc_and_index(text):
     :param text: The original text
     :return: (doc, dict): The spacy parsed document and a map from characters to token indices
     """
-    doc = nlp(text, disable=['tagger', 'ner'])
+    #doc = nlp(text, disable=['tagger', 'ner'])
+    doc = nlp(text, disable=['ner'])
     chars_to_tokens = {}
     largest = 0
     last_idx = 0
@@ -289,6 +290,11 @@ def dataset_worker(ab):
                     final_samples = []
 
                 if len(final_samples) > 0:
+                    cits_in_section = []
+                    for fs in final_samples:
+                        if fs['ref_ids']:
+                            cits_in_section = cits_in_section + [ref_id for ref_id in fs['ref_ids']]
+
                     dataset.append({
                         'paper_id': metadata['paper_id'],
                         'section_index': index,
@@ -302,7 +308,7 @@ def dataset_worker(ab):
                         'paper_abstract' : metadata['abstract'],
                         'paper_year' : metadata['year'],
                         'outgoing_citations' : metadata['outbound_citations'],
-                        'outgoing_citations_in_section' : [ ref_id for fs in final_samples for ref_id in fs['ref_ids']]
+                        'outgoing_citations_in_section' : cits_in_section
                     })
     return ab,dataset
 

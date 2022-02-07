@@ -16,19 +16,23 @@ data_loc = Path('../20200705v1/full/')
 
 
 def index_metadata(ab):
-    article_id_to_metadata = {}
-    with gzip.open(f"../filtered_metadata/metadata_{ab}.jsonl.gz") as f:
-        for i, l in enumerate(f):
-            metadata = json.loads(l.strip())
-            article_id_to_metadata[metadata['paper_id']] = metadata
-    with gzip.open(f"{data_loc}/pdf_parses/pdf_parses_{ab}.jsonl.gz") as f:
-        offset = 0
-        for i, l in enumerate(f):
-            pdf = json.loads(l.strip())
-            if pdf['paper_id'] in article_id_to_metadata:
-                article_id_to_metadata[pdf['paper_id']]['file_line_offset'] = offset
-            offset += len(l)
-    return ab,list(article_id_to_metadata.values())
+    try:
+        article_id_to_metadata = {}
+        with gzip.open(f"../filtered_metadata/metadata_{ab}.jsonl.gz") as f:
+            for i, l in enumerate(f):
+                metadata = json.loads(l.strip())
+                article_id_to_metadata[metadata['paper_id']] = metadata
+        with gzip.open(f"{data_loc}/pdf_parses/pdf_parses_{ab}.jsonl.gz") as f:
+            offset = 0
+            for i, l in enumerate(f):
+                pdf = json.loads(l.strip())
+                if pdf['paper_id'] in article_id_to_metadata:
+                    article_id_to_metadata[pdf['paper_id']]['file_line_offset'] = offset
+                offset += len(l)
+        return ab,list(article_id_to_metadata.values())
+    except BaseException as e:
+        print("Error")
+    return ab,list()
 
 if __name__ == "__main__":
     # Get all of the statistics for venues, also time how long it takes to iterate through all the data
@@ -41,8 +45,9 @@ if __name__ == "__main__":
 
     print(f"{len(jobs)} files to go")
 
-    for vf in tqdm(pool.imap_unordered(index_metadata, jobs), total=100):
+    for vf in tqdm(pool.imap_unordered(index_metadata, jobs), total=len(jobs)):
         with gzip.open(f"../filtered_metadata/metadata_{vf[0]}.jsonl.gz", 'wt') as f:
+            print(f"writing ../filtered_metadata/metadata_{vf[0]}.jsonl.gz")
             for l in vf[1]:
                 f.write(json.dumps(l) + '\n')
     pool.close()
