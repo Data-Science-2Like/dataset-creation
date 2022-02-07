@@ -53,9 +53,13 @@ if __name__ == "__main__":
 
     pool = Pool(8)
     venue_frequencies = defaultdict(int)
-    for vf in tqdm(pool.imap_unordered(filter_by_metadata, article_bundles), total=100):
-        with gzip.open(f"../filtered_metadata/{vf[0][0].name}", 'w') as f:
-            for l in vf:
-                f.write(l[1])
-    pool.close()
-    pool.join()
+	try:
+        for vf in tqdm(pool.imap_unordered(filter_by_metadata, article_bundles), total=100):
+            with gzip.open(f"../filtered_metadata/{vf[0][0].name}", 'w') as f:
+                for l in vf:
+                    f.write(l[1])
+	except BaseException as e:
+        print(f"Unexpected {err=}, {type(err)=}")
+    finally:
+        pool.close()
+        pool.join()
