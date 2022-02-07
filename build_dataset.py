@@ -11,7 +11,7 @@ import string
 from collections import defaultdict
 from pathlib import Path
 
-data_loc = Path('../data/s2orc_full/20200705v1/full/')
+data_loc = Path('../20200705v1/full/')
 
 def valid_sentence(sentence_text):
     """
@@ -193,7 +193,7 @@ def remove_citations(text, sent, spans):
 def dataset_worker(ab):
     dataset = []
     permissible_titles = get_permissible_title_list()
-    with gzip.open(f"{data_loc}/filtered_metadata/metadata_{ab}.jsonl.gz") as f, \
+    with gzip.open(f"../filtered_metadata/metadata_{ab}.jsonl.gz") as f, \
          gzip.open(f"{data_loc}/pdf_parses/pdf_parses_{ab}.jsonl.gz") as g:
         for i, l in enumerate(f):
             metadata = json.loads(l.strip())
@@ -297,7 +297,12 @@ def dataset_worker(ab):
                         'mag_field_of_study': metadata['mag_field_of_study'],
                         'original_text': sec['text'],
                         'section_title': sec['section'],
-                        'samples': final_samples
+                        'samples': final_samples,
+                        'paper_title' : metadata['title'],
+                        'paper_abstract' : metadata['abstract'],
+                        'paper_year' : metadata['year'],
+                        'outgoing_citations' : metadata['outbound_citations']
+                        'outgoing_citations_in_section' : [ ref_id for fs in final_samples for ref_id in fs['ref_ids']]
                     })
     return ab,dataset
 
@@ -311,17 +316,20 @@ if __name__ == "__main__":
     #     f.write("text\toriginal_citation\tlabel\n")
     version = 1
     completed = []
-    with open(f'data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt') as f:
+    with open(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt') as f:
         completed = set([int(l.strip()) for l in f])
 
     run_list = [i for i in range(100) if i not in completed and i != 12] # skip 12 since it never finishes
     print(f"{len(run_list)} files to go")
-    for result in tqdm(pool.imap_unordered(dataset_worker, run_list), total=len(run_list)):
+	
+	f_run_list = list(lambda n : Path(f"../filtered_metadata/metadata_{n}.jsonl.gz").exists(),run_list)
+	print(f"{len(f_run_list)} files to go")
+    for result in tqdm(pool.imap_unordered(dataset_worker, f_run_list), total=len(run_list)):
         # Mark it as completed first so we don't accidentally duplicate data
-        with open(f'data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt', 'at+') as f:
+        with open(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt', 'at+') as f:
             f.write(f"{result[0]}\n")
 
-        with open(f"{data_loc}/citation_needed_data_contextualized_with_removal_v{version}.jsonl", 'at+') as f:
+        with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl", 'at+') as f:
             for record in result[1]:
                 f.write(f"{json.dumps(record)}\n")
 
