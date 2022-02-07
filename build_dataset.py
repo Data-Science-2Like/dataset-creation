@@ -301,7 +301,7 @@ def dataset_worker(ab):
                         'paper_title' : metadata['title'],
                         'paper_abstract' : metadata['abstract'],
                         'paper_year' : metadata['year'],
-                        'outgoing_citations' : metadata['outbound_citations']
+                        'outgoing_citations' : metadata['outbound_citations'],
                         'outgoing_citations_in_section' : [ ref_id for fs in final_samples for ref_id in fs['ref_ids']]
                     })
     return ab,dataset
@@ -316,14 +316,15 @@ if __name__ == "__main__":
     #     f.write("text\toriginal_citation\tlabel\n")
     version = 1
     completed = []
-    with open(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt') as f:
-        completed = set([int(l.strip()) for l in f])
+    if Path(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt').exists():
+        with open(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt') as f:
+            completed = set([int(l.strip()) for l in f])
 
     run_list = [i for i in range(100) if i not in completed and i != 12] # skip 12 since it never finishes
     print(f"{len(run_list)} files to go")
-	
-	f_run_list = list(lambda n : Path(f"../filtered_metadata/metadata_{n}.jsonl.gz").exists(),run_list)
-	print(f"{len(f_run_list)} files to go")
+
+    f_run_list = list(filter(lambda n : Path(f"../filtered_metadata/metadata_{n}.jsonl.gz").exists(),run_list))
+    print(f"{len(f_run_list)} files to go")
     for result in tqdm(pool.imap_unordered(dataset_worker, f_run_list), total=len(run_list)):
         # Mark it as completed first so we don't accidentally duplicate data
         with open(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt', 'at+') as f:

@@ -36,7 +36,12 @@ if __name__ == "__main__":
 
     pool = Pool(8)
     venue_frequencies = defaultdict(int)
-    for vf in tqdm(pool.imap_unordered(index_metadata, range(100)), total=100):
+
+    jobs = list(filter(lambda n: Path(f"../filtered_metadata/metadata_{n}.jsonl.gz").exists(),range(100)))
+
+    print(f"{len(jobs)} files to go")
+
+    for vf in tqdm(pool.imap_unordered(index_metadata, jobs), total=100):
         with gzip.open(f"../filtered_metadata/metadata_{vf[0]}.jsonl.gz", 'wt') as f:
             for l in vf[1]:
                 f.write(json.dumps(l) + '\n')
