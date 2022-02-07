@@ -34,11 +34,14 @@ def article_allowed(metadata):
 
 def filter_by_metadata(ab):
     venues = []
-    with gzip.open(ab) as f:
-        for i, l in enumerate(f):
-            metadata = json.loads(l.strip())
-            if article_allowed(metadata):
-                venues.append((ab,l))
+    try:
+        with gzip.open(ab) as f:
+            for i, l in enumerate(f):
+                metadata = json.loads(l.strip())
+                if article_allowed(metadata):
+                    venues.append((ab,l))
+    except BaseException as e:
+         print(f"Unexpected {err=}, {type(err)=}")
     return venues
 
 
@@ -53,12 +56,12 @@ if __name__ == "__main__":
 
     pool = Pool(8)
     venue_frequencies = defaultdict(int)
-	try:
+    try:
         for vf in tqdm(pool.imap_unordered(filter_by_metadata, article_bundles), total=100):
             with gzip.open(f"../filtered_metadata/{vf[0][0].name}", 'w') as f:
                 for l in vf:
                     f.write(l[1])
-	except BaseException as e:
+    except BaseException as e:
         print(f"Unexpected {err=}, {type(err)=}")
     finally:
         pool.close()
