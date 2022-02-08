@@ -19,18 +19,21 @@ import json
 #                         'outgoing_citations_in_section' : cits_in_section
 #                     })
 
+READIN_ENTRIES = 2000
+
+
 if __name__ == "__main__":
 
     version = 1
 
-    data = list()
+    data = list(
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
         for i, l in enumerate(f):
             data.append(json.loads(l.strip()))
 
     print(f"Loaded {len(data)} entries")
 
-    for entry in data:
+    for entry in tqdm(data):
         del entry['section_index']
         del entry['file_index']
         del entry['file_offset']
