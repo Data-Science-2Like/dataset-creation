@@ -19,7 +19,14 @@ import json
 #                         'outgoing_citations_in_section' : cits_in_section
 #                     })
 
-READIN_ENTRIES = 2000
+READIN_ENTRIES = 10000
+
+def read_only_lines(f, start, finish):
+    for ii, line in enumerate(f):
+        if ii>= start and ii < finish:
+            yield line
+        elif ii>= finish:
+            return
 
 if __name__ == "__main__":
 
@@ -27,17 +34,18 @@ if __name__ == "__main__":
 
     iteration = 0
 
-    data = list()
-
     reached_eof = False
 
     # only load part of file at a time
     while not reached_eof:
+        data = list()
         with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
 
-            for i in range(iteration * READIN_ENTRIES):
-                next(f)
-            for l in [next(f) for i in range(READIN_ENTRIES)]:
+            #for i in range(iteration * READIN_ENTRIES):
+            #    next(f)
+            #for l in [next(f) for i in range(READIN_ENTRIES)]:
+            #    data.append(json.loads(l.strip()))
+            for l in read_only_lines(f,iteration * READIN_ENTRIES, (iteration + 1) * READIN_ENTRIES):
                 data.append(json.loads(l.strip()))
 
         print(f"Loaded {len(data)} entries")
@@ -46,13 +54,13 @@ if __name__ == "__main__":
             reached_eof = True
 
         for entry in tqdm(data):
-            del entry['section_index']
-            del entry['file_index']
-            del entry['file_offset']
-            del entry['mag_field_of_study']
-            del entry['original_text']
-            del entry['samples']
-            del entry['paper_abstract']
+            entry.pop('section_index','ignore')
+            entry.pop('file_index','')
+            entry.pop('file_offset','')
+            entry.pop('mag_field_of_study','')
+            entry.pop('original_text','')
+            entry.pop('samples','')
+            entry.pop('paper_abstract','')
 
         if iteration == 0:
             print("Example entry:")
