@@ -21,31 +21,45 @@ import json
 
 READIN_ENTRIES = 2000
 
-
 if __name__ == "__main__":
 
     version = 1
 
-    data = list(
-    with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
-        for i, l in enumerate(f):
-            data.append(json.loads(l.strip()))
+    iteration = 0
 
-    print(f"Loaded {len(data)} entries")
+    data = list()
 
-    for entry in tqdm(data):
-        del entry['section_index']
-        del entry['file_index']
-        del entry['file_offset']
-        del entry['mag_field_of_study']
-        del entry['original_text']
-        del entry['samples']
-        del entry['paper_abstract']
+    reached_eof = False
 
-    print("Example entry:")
-    print(f"{json.dumps(data[0])}")
+    # only load part of file at a time
+    while not reached_eof:
+        with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
 
-    with open(f"../data/aae_recommender_with_section_info_v{version}.jsonl", 'w') as f:
-        for entry in data:
-            f.write(f"{json.dumps(entry)}\n")
+            for i in range(iteration * READIN_ENTRIES):
+                next(f)
+            for l in [next(f) for i in range(READIN_ENTRIES)]:
+                data.append(json.loads(l.strip()))
 
+        print(f"Loaded {len(data)} entries")
+
+        if len(data) < READIN_ENTRIES:
+            reached_eof = True
+
+        for entry in tqdm(data):
+            del entry['section_index']
+            del entry['file_index']
+            del entry['file_offset']
+            del entry['mag_field_of_study']
+            del entry['original_text']
+            del entry['samples']
+            del entry['paper_abstract']
+
+        if iteration == 0:
+            print("Example entry:")
+            print(f"{json.dumps(data[0])}")
+
+        with open(f"../data/aae_recommender_with_section_info_v{version}.jsonl", 'a+') as f:
+            for entry in data:
+                f.write(f"{json.dumps(entry)}\n")
+
+        iteration += 1
