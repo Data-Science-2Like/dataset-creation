@@ -63,9 +63,11 @@ def extract_sections(pdf, permissible_titles):
     return (indices, sections) if total_cite_spans > 5 else ([], [])
 
 def extract_bibref(pdf):
-    bib_entries = []
-    for key in enumerate(pdf['bib_entries'].keys()):
-        link = pdf['bib_entries'][key][link]
+    bib_entries = dict()
+    # print(str(pdf['bib_entries']))
+    for key in pdf['bib_entries'].keys():
+        # print(key)
+        link = pdf['bib_entries'][key]['link']
         bib_entries[key] = link
 
     return bib_entries
@@ -301,14 +303,15 @@ def dataset_worker(ab):
                     final_samples = []
 
                 if len(final_samples) > 0:
-                    cits_in_section = []
+                    cits_in_section = list()
                     for fs in final_samples:
                         if fs['ref_ids']:
                             cits_in_section = cits_in_section + [ref_id for ref_id in fs['ref_ids']]
-
-                    ids_in_section = []
-                    for entry in cits_in_section:
-                        ids_in_section.append(bib_entries[entry])
+                    # print("Bibref ids ", str(cits_in_section))
+                    ids_in_section = list()
+                    for entry_list in cits_in_section:
+                        for entry in entry_list:
+                            ids_in_section.append(bib_entries.get(entry))
 
 
                     dataset.append({
