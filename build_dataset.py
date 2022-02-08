@@ -62,6 +62,15 @@ def extract_sections(pdf, permissible_titles):
 
     return (indices, sections) if total_cite_spans > 5 else ([], [])
 
+def extract_bibref(pdf):
+    bib_entries = []
+    for key in enumerate(pdf['bib_entries'].keys()):
+        link = pdf['bib_entries'][key][link]
+        bib_entries[key] = link
+
+    return bib_entries
+
+
 
 def create_doc_and_index(text):
     """
@@ -203,6 +212,8 @@ def dataset_worker(ab):
             pdf = json.loads(g.readline())
             # Text indices are the indices into the "body_text" section of the parsed PDF json
             (text_indices, sections) = extract_sections(pdf, permissible_titles)
+
+            bib_entries = extract_bibref(pdf)
             for index, sec in zip(text_indices, sections):
 
                 # Create the doc and index all of the characters to tokens
@@ -295,6 +306,11 @@ def dataset_worker(ab):
                         if fs['ref_ids']:
                             cits_in_section = cits_in_section + [ref_id for ref_id in fs['ref_ids']]
 
+                    ids_in_section = []
+                    for entry in cits_in_section:
+                        ids_in_section.append(bib_entries[entry])
+
+
                     dataset.append({
                         'paper_id': metadata['paper_id'],
                         'section_index': index,
@@ -308,7 +324,7 @@ def dataset_worker(ab):
                         'paper_abstract' : metadata['abstract'],
                         'paper_year' : metadata['year'],
                         'outgoing_citations' : metadata['outbound_citations'],
-                        'outgoing_citations_in_section' : cits_in_section
+                        'outgoing_citations_in_section' : ids_in_section
                     })
     return ab,dataset
 
