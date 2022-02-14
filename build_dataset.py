@@ -234,6 +234,7 @@ def dataset_worker(ab):
                 paragraph_failed = False
                 for sent in doc.sents:
                     context_only = False
+                    middle_sentence = False
                     sentence_citation_spans = []
                     # If there are still citation spans and the current sentence starts after the current span,
                     # there was a sentence parsing issue where the character spans
@@ -249,6 +250,7 @@ def dataset_worker(ab):
                         context_only = context_only \
                                        or not brackets_only(final_spans[j]['text'].strip()) \
                                        or not_end_of_sentence(sec['text'], sent, final_spans[j])
+                        middle_sentence = middle_sentence or not brackets_only(final_spans[j]['text'].strip())
 
                         j += 1
                     if len(sentence_citation_spans) > 0:
@@ -275,6 +277,7 @@ def dataset_worker(ab):
                             final_samples.append({
                                 'text': final_sentence,
                                 'label': 'context-only' if context_only else 'check-worthy',
+                                'label_cite' : 'context-only' if middle_sentence else 'check-worthy',
                                 'original_text': sent.text,
                                 'ref_ids': [sp['ref_ids'] for sp in sentence_citation_spans],
                                 'citation_text': [sp['text'] for sp in sentence_citation_spans]
@@ -292,6 +295,7 @@ def dataset_worker(ab):
                             final_samples.append({
                                 'text': sent.text,
                                 'label': 'non-check-worthy',
+                                'label_cite': 'non-check-worthy',
                                 'original_text': sent.text,
                                 'ref_ids': None
                             })
