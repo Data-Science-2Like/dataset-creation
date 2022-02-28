@@ -61,6 +61,8 @@ if __name__ == "__main__":
     article_bundles = []
     for article_bundle in data_loc.glob(f"metadata/*.gz"):
         article_bundles.append(article_bundle)
+    for article_bundle in data_loc.glob(f"metadata/*.jsonl"):
+        article_bundles.append(article_bundle)
 
     with ProcessPool() as pool:
         future = pool.map(filter_by_metadata, article_bundles, timeout=300)
