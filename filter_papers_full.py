@@ -21,6 +21,7 @@ def article_allowed(metadata):
 		and metadata['has_outbound_citations'] \
 		and metadata['title'] \
 		and metadata['abstract'] \
+        and metadata['authors'] \
         and metadata['has_pdf_parse'] and metadata['has_pdf_parsed_abstract'] \
         and metadata['has_pdf_parsed_body_text'] and metadata['has_pdf_parsed_bib_entries'] \
         and metadata['has_pdf_parsed_ref_entries'] and metadata['abstract'] \
@@ -41,7 +42,7 @@ def filter_by_metadata(ab):
                 if article_allowed(metadata):
                     venues.append((ab,l))
     except BaseException as e:
-         print(f"Unexpected {err=}, {type(err)=}")
+         print(f"Unexpected {e=}, {type(e)=}")
     return venues
 
 
@@ -62,7 +63,7 @@ if __name__ == "__main__":
                 for l in vf:
                     f.write(l[1])
     except BaseException as e:
-        print(f"Unexpected {err=}, {type(err)=}")
+        print(f"Unexpected {e=}, {type(e)=}")
     finally:
         pool.close()
         pool.join()
