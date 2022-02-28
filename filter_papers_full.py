@@ -36,11 +36,18 @@ def article_allowed(metadata):
 def filter_by_metadata(ab):
     venues = []
     try:
-        with gzip.open(ab) as f:
-            for i, l in enumerate(f):
-                metadata = json.loads(l.strip())
-                if article_allowed(metadata):
-                    venues.append((ab, l))
+        if ab.suffix == '.gz':
+            with gzip.open(ab) as f:
+                for i, l in enumerate(f):
+                    metadata = json.loads(l.strip())
+                    if article_allowed(metadata):
+                        venues.append((ab, l))
+        else:
+            with open(ab) as f:
+                for i, l in enumerate(f):
+                    metadata = json.loads(l.strip())
+                    if article_allowed(metadata):
+                        venues.append((ab, l))
     except BaseException as e:
         print(f"Unexpected {e=}, {type(e)=}")
     return venues
