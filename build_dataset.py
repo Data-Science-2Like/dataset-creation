@@ -330,6 +330,7 @@ def dataset_worker(ab):
                         'paper_title' : metadata['title'],
                         'paper_abstract' : metadata['abstract'],
                         'paper_year' : metadata['year'],
+                        'paper_authors' : metadata['authors'],
                         'outgoing_citations' : metadata['outbound_citations'],
                         'outgoing_citations_in_section' : ids_in_section
                     })
