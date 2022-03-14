@@ -273,13 +273,21 @@ def dataset_worker(ab):
                                 and not ignore_sentence(sec['text'], sent, sentence_text=final_sentence) \
                                 and not hanging_citation(final_sentence):
 
+                            # translate bibtex ids before appending to results
+                            ids_in_paragraph = list()
+                            for entries in sentence_citation_spans:
+                                for entry in entries['ref_ids']:
+                                    ids_in_paragraph.append(bib_entries.get(entry))
+
+
+
                             # Create json
                             final_samples.append({
                                 'text': final_sentence,
                                 'label': 'context-only' if context_only else 'check-worthy',
                                 'label_cite' : 'context-only' if middle_sentence else 'check-worthy',
                                 'original_text': sent.text,
-                                'ref_ids': [sp['ref_ids'] for sp in sentence_citation_spans],
+                                'ref_ids': ids_in_paragraph,
                                 'citation_text': [sp['text'] for sp in sentence_citation_spans]
                             })
                         else:
@@ -311,11 +319,6 @@ def dataset_worker(ab):
                     for fs in final_samples:
                         if fs['ref_ids']:
                             cits_in_section = cits_in_section + [ref_id for ref_id in fs['ref_ids']]
-                    # print("Bibref ids ", str(cits_in_section))
-                    ids_in_section = list()
-                    for entry_list in cits_in_section:
-                        for entry in entry_list:
-                            ids_in_section.append(bib_entries.get(entry))
 
 
                     dataset.append({
@@ -332,7 +335,7 @@ def dataset_worker(ab):
                         'paper_year' : metadata['year'],
                         'paper_authors' : metadata['authors'],
                         'outgoing_citations' : metadata['outbound_citations'],
-                        'outgoing_citations_in_section' : ids_in_section
+                        'outgoing_citations_in_section' : cits_in_section
                     })
     return ab,dataset
 
@@ -344,7 +347,7 @@ if __name__ == "__main__":
 
     # with open(f"{data_loc}/citation_needed_data_v4.tsv", 'wt') as f:
     #     f.write("text\toriginal_citation\tlabel\n")
-    version = 1
+    version = 3
     completed = []
     if Path(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt').exists():
         with open(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt') as f:
