@@ -19,31 +19,40 @@ import json
 #                         'outgoing_citations_in_section' : cits_in_section
 #                     })
 
-READIN_ENTRIES = 10000
-
-def read_only_lines(f, start, finish):
-    for ii, line in enumerate(f):
-        if ii>= start and ii < finish:
-            yield line
-        elif ii>= finish:
-            return
 
 if __name__ == "__main__":
 
     version = 3
     
     paper_counts = {}
+    paper_ids = {}
+    total_paper_count = 0
+    total_section_count = 0
 
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
 
         for line in tqdm(f):
             entry = json.loads(line.strip())
+            total_section_count += 1
+            if entry['paper_id'] in paper_ids.keys():
+                continue
+            # Only count each paper once
+            paper_ids[entry['paper_id']] = True
 
+            total_paper_count += 1
             if entry['paper_year'] not in paper_counts.keys():
-                entry['paper_year'] = 0
-            entry['paper_year'] += 1
+                paper_counts[entry['paper_year']] = 0
+            paper_counts[entry['paper_year']] += 1
 
 
-    for year in paper_counts.keys():
+    years = []
+    for y in paper_counts.keys():
+        if y is not None:
+            years.append(y)
+    years.sort()
+
+    for year in years:
         print(f"Year: {year} counts {paper_counts[year]} papers ")
 
+    print(f"Total Paper Count: {total_paper_count}")
+    print(f"Total Section Count: {total_section_count}")
