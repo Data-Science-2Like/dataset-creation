@@ -43,7 +43,7 @@ def filter_by_metadata(ab):
                     if article_allowed(metadata):
                         venues.append((ab, l))
         else:
-            with open(ab) as f:
+            with open(ab, 'r') as f:
                 for i, l in enumerate(f):
                     metadata = json.loads(l.strip())
                     if article_allowed(metadata):

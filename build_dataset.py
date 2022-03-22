@@ -329,6 +329,7 @@ def dataset_worker(ab):
                         'mag_field_of_study': metadata['mag_field_of_study'],
                         'original_text': sec['text'],
                         'section_title': sec['section'],
+                        'is_arxiv' : True if 'arxiv' in metadata.keys() else False,
                         'samples': final_samples,
                         'paper_title' : metadata['title'],
                         'paper_abstract' : metadata['abstract'],
