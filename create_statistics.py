@@ -39,15 +39,6 @@ if __name__ == "__main__":
         for line in tqdm(f):
             entry = json.loads(line.strip())
 
-
-            entry.pop('section_index','ignore')
-            entry.pop('file_index','')
-            entry.pop('file_offset','')
-            entry.pop('mag_field_of_study','')
-            entry.pop('original_text','')
-            entry.pop('samples','')
-            entry.pop('paper_abstract','')
-
             if entry['paper_year'] not in paper_counts.keys():
                 entry['paper_year'] = 0
             entry['paper_year'] += 1
