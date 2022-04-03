@@ -62,11 +62,84 @@ FINE_GRAINED_LABELS = {
      "implementation details": 3 # Methods 
 }
 
+SYNONYMS_PARSER = {
+    "abstract" : "abstract",
+    "introduction": "introduction",
+    "intro": "introduction",
+    "overview": "introduction",
+    "motivation": "introduction",
+    "problem motivation": "introduction",
+    "related work": "related work",
+    "related works": "related work",
+    "previous work": "related work",
+    "literature": "related work",
+    "background": "related work",
+    "literature review": "related work",
+    "state of the art": "related work",
+    "current state of research": "related work",
+    "requirement": "related work",
+    "theory basics": "theory basics",
+    "techniques": "techniques",
+    "experiment": "experiment",
+    "experiments" : "experiment",
+    "experiments and results": "experiment",
+    "experimental result": "experiment",
+    "experimental results": "experiment",
+    "experimental setup": "experiment",
+    "result": "experiment",
+    "results" : "experiment",
+    "evaluation": "experiment",
+    "performance evaluation": "experiment",
+    "experiment and result": "experiment",
+    "analysis": "experiment",
+    "methodology": "method",
+    "method": "method",
+    "methods": "method",
+    "material and method": "method",
+    "material and methods": "method",
+    "proposed method": "method",
+    "evaluation methodology": "method",
+    "procedure": "method",
+    "implementation": "method",
+    "experimental design": "method",
+    "implementation detail": "method",
+    "implementation details": "method",
+    "system model": "method",
+    "definition": "definition",
+    "data set": "data set",
+    "solution": "solution",
+    "discussion": "discussion",
+    "discussions" : "discussion",
+    "limitation": "discussion",
+    "limitations" : "discussion",
+    "discussion and conclusion": "discussion",
+    "discussion and conclusions" : "discussion",
+    "result and discussion": "result and discussion",
+    "results and discussion": "result and discussion",
+    "results and discussions": "result and discussion",
+    "results and analysis": "results and discussion",
+    "future work": "conclusion",
+    "conclusion": "conclusion",
+    "conclusions" : "conclusion",
+    "summary": "conclusion",
+    "conclusion and outlook": "conclusion",
+    "conclusion and future work": "conclusion",
+    "conclusions and future work": "conclusion",
+    "concluding remark": "conclusion"
+}
+
 NUM_TO_SEC = ["None","Introduction","Abstract","Methods","Results","Discussion","Conclusion", "Background"]
 
 
 def get_mapping(query: str) -> str:
-    return NUM_TO_SEC[FINE_GRAINED_LABELS[query]]
+
+    # find out missing labels
+    #for key in FINE_GRAINED_LABELS.keys():
+    #    if key not in SYNONYMS_PARSER.keys():
+    #        print(key)
+    #raise ValueError()
+    #return NUM_TO_SEC[FINE_GRAINED_LABELS[query]]
+    return SYNONYMS_PARSER[query]
 
 
 def get_permissible_title_list():
