@@ -24,7 +24,12 @@ ESTIMATED_SEC_COUNT = 5567825
 
 if __name__ == "__main__":
 
+    progress = True
+
     unconsistent_sections = 0
+
+    unconsistent_sentences = 0
+    total_sentences = 0
 
     version = 3
 
@@ -33,7 +38,7 @@ if __name__ == "__main__":
 
     reached_eof = False
 
-    pbar = tqdm(total=ESTIMATED_SEC_COUNT)
+    pbar = tqdm(total=ESTIMATED_SEC_COUNT) if progress else None
     # only load part of file at a time
     while not reached_eof:
         data = list()
@@ -53,22 +58,35 @@ if __name__ == "__main__":
             reached_eof = True
 
         for entry in data:
+            is_consistent = True
             for sample in entry['samples']:
                 if sample['label'] == 'check-worthy' and sample['label_cite'] == 'check-worthy':
+                    total_sentences += 1
                     continue
                 elif sample['label_cite'] == 'context-only' and sample['label'] == 'context-only':
+                    total_sentences += 1
                     continue
                 elif sample['label'] == 'context-only' and sample['label_cite'] != 'non-check-worthy':
+                    total_sentences += 1
                     continue
-                elif sample['label'] == 'non-check_worthy' and sample['label_cite'] == 'non-check-worthy':
+                elif sample['label'] == 'non-check-worthy' and sample['label_cite'] == 'non-check-worthy':
+                    total_sentences += 1
                     continue
                 else:
-                    unconsistent_sections += 1
-                    break
-            pbar.update(1)
+                    print(f"label was {sample['label']} and label_cite was {sample['label_cite']}")
+                    print(f"{json.dumps(sample)}\n")
+                    unconsistent_sentences += 1
+                    total_sentences += 1
+                    is_consistent = False
+                    continue
+            if not is_consistent:
+                unconsistent_sections += 1
+            if progress:
+                pbar.update(1)
         iteration += 1
-    pbar.close()
+    if progress:
+        pbar.close()
 
     print(f"Unconsistent: {unconsistent_sections} / {ESTIMATED_SEC_COUNT} Percent: {unconsistent_sections/ ESTIMATED_SEC_COUNT}")
-
+    print(f"Un. Sentences: {unconsistent_sentences} / {total_sentences} Percent: {unconsistent_sentences/total_sentences}")
 
