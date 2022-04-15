@@ -6,6 +6,7 @@ from statistics import mean
 from pathlib import Path
 from pebble import concurrent, ProcessPool, ProcessExpired
 import gzip
+import argparse
 
 # dataset.append({
 #                         'paper_id': metadata['paper_id'],
@@ -162,8 +163,7 @@ def get_years(ab):
 
     return p_years
 
-if __name__ == "__main__":
-
+def main(field=None):
     version = 3
     
 
@@ -203,48 +203,49 @@ if __name__ == "__main__":
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
         for line in tqdm(f, total=estimated_sec_count):
             entry = json.loads(line.strip())
-            total_section_count += 1
-            if entry['paper_id'] in paper_ids.keys():
-                paper_section_counts[entry['paper_id']] += 1
+            if field in entry['mag_field_of_study'] and len(entry['mag_field_of_study']):
+                total_section_count += 1
+                if entry['paper_id'] in paper_ids.keys():
+                    paper_section_counts[entry['paper_id']] += 1
 
-                # collecting information abount average cits in sections and their age
+                    # collecting information abount average cits in sections and their age
 
-                st = get_mapping(entry['section_title'].lower())
-                if st not in sec_stats.keys():
-                    sec_stats[st] = {}
-                    sec_stats[st]['avg_count'] = 0
-                    sec_stats[st]['avg_age'] = 0
-                    sec_stats[st]['weight'] = 0
+                    st = get_mapping(entry['section_title'].lower())
+                    if st not in sec_stats.keys():
+                        sec_stats[st] = {}
+                        sec_stats[st]['avg_count'] = 0
+                        sec_stats[st]['avg_age'] = 0
+                        sec_stats[st]['weight'] = 0
 
-                cit_count = len(list(filter(lambda s : s['label'] == 'check-worthy',entry['samples']))) / len(entry['samples'])
+                    cit_count = len(list(filter(lambda s : s['label'] == 'check-worthy',entry['samples']))) / len(entry['samples'])
 
-                years = []
-                for s in entry['samples']:
-                    if 'ref_ids' in s.keys() and s['ref_ids'] is not None and len(s['ref_ids']) > 0:
-                        for id in s['ref_ids']:
-                            if id is not None and paper_years[id] is not None and entry['paper_year'] is not None:
-                                years.append(entry['paper_year'] - paper_years[id])
+                    years = []
+                    for s in entry['samples']:
+                        if 'ref_ids' in s.keys() and s['ref_ids'] is not None and len(s['ref_ids']) > 0:
+                            for id in s['ref_ids']:
+                                if id is not None and paper_years[id] is not None and entry['paper_year'] is not None:
+                                    years.append(entry['paper_year'] - paper_years[id])
 
-                # avg_age = mean([entry['paper_year'] - paper_years[id] for s in entry['samples'] for id in s['ref_ids']])
-                avg_age = mean(years) if len(years) > 0 else 0
-                ow = sec_stats[st]['weight']
-                sec_stats[st]['avg_count'] = calc_avg(sec_stats[st]['avg_count'],ow, cit_count)
-                sec_stats[st]['avg_age'] = calc_avg(sec_stats[st]['avg_age'], ow, avg_age)
-                sec_stats[st]['weight'] += 1
+                    # avg_age = mean([entry['paper_year'] - paper_years[id] for s in entry['samples'] for id in s['ref_ids']])
+                    avg_age = mean(years) if len(years) > 0 else 0
+                    ow = sec_stats[st]['weight']
+                    sec_stats[st]['avg_count'] = calc_avg(sec_stats[st]['avg_count'],ow, cit_count)
+                    sec_stats[st]['avg_age'] = calc_avg(sec_stats[st]['avg_age'], ow, avg_age)
+                    sec_stats[st]['weight'] += 1
 
-                continue
-            # Only count each paper once
-            paper_ids[entry['paper_id']] = True
+                    continue
+                # Only count each paper once
+                paper_ids[entry['paper_id']] = True
 
-            total_paper_count += 1
-            if entry['paper_year'] not in paper_counts.keys():
-                paper_counts[entry['paper_year']] = 0
-                paper_ids_per_year[entry['paper_year']] = []
-            
+                total_paper_count += 1
+                if entry['paper_year'] not in paper_counts.keys():
+                    paper_counts[entry['paper_year']] = 0
+                    paper_ids_per_year[entry['paper_year']] = []
+                
 
-            paper_ids_per_year[entry['paper_year']].append(entry['paper_id'])
-            paper_section_counts[entry['paper_id']] = 1
-            paper_counts[entry['paper_year']] += 1
+                paper_ids_per_year[entry['paper_year']].append(entry['paper_id'])
+                paper_section_counts[entry['paper_id']] = 1
+                paper_counts[entry['paper_year']] += 1
 
 
     
@@ -272,3 +273,10 @@ if __name__ == "__main__":
 
     for section in sec_stats.keys():
         print(f"Section {section}: Avg Count: {sec_stats[section]['avg_count']} Avg Age: {sec_stats[section]['avg_age']}, Weight: {sec_stats[section]['weight']}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--field', default="Computer Science", help='fields used for paper selection')
+    args = parser.parse_args()
+    arguments = vars(args)
+    main(arguments["field"])
