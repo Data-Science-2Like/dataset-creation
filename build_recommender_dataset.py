@@ -31,12 +31,19 @@ def main(fields):
     outfile = open(f"../data/aae_recommender_with_section_info_v{out_version}.jsonl", 'a+')
 
     last_paper_id = None
-    last_section_title = None
 
-    curr_entry = None
+    #paper_ids_already_printed = []
+
+    curr_paper = None
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}_sorted.jsonl") as f:
         for idx,line in enumerate(tqdm(f,total=ESTIMATED_SEC_COUNT)):
+
             entry = json.loads(line.strip())
+            # consistency check to see if paper is really sorted
+            #if entry['paper_id'] in paper_ids_already_printed:
+            #    raise ValueError('Input file is not sorted')
+            # consistency check makes things to slow
+
 
             entry.pop('section_index','ignore')
             entry.pop('file_index','')
@@ -45,27 +52,30 @@ def main(fields):
             entry.pop('samples','')
             entry.pop('paper_abstract','')
 
-
-            # append sections citations
-            if last_paper_id == entry['paper_id'] and last_section_title == entry['section_title']:
-                curr_entry['outgoing_citations_in_section'] = curr_entry['outgoing_citations_in_section'] + entry['outgoing_citations_in_section']
-
+            sec_title = entry['section_title']
+            # append sections citations if section already occured
+            if last_paper_id == entry['paper_id'] and sec_title in curr_paper.keys():
+                curr_paper[sec_title]['outgoing_citations_in_section'] = curr_paper[sec_title]['outgoing_citations_in_section'] + entry['outgoing_citations_in_section']
+            elif last_paper_id == entry['paper_id']:
+                # new section found
+                curr_paper[sec_title] = entry
             else:
-
-
+                # new paper print current paper
                 # First Time is not initialized, but we do not want to print
                 if last_paper_id is not None:
-                    if not printed:
-                        print("Example entry:")
-                        print(f"{json.dumps(curr_entry)}")
-                        printed = True
+                    if fields in curr_paper[list(curr_paper.keys())[0]]['mag_field_of_study']:
+                        if not printed:
+                            print("Example entry:")
+                            for sec in curr_paper.keys():
+                                print(f"{json.dumps(curr_paper[sec])}")
+                            printed = True
 
-                    if fields in curr_entry['mag_field_of_study']:
-                        outfile.write(f"{json.dumps(curr_entry)}\n")
+                        for sec in curr_paper.keys():
+                            outfile.write(f"{json.dumps(curr_paper[sec])}\n")
+                        #paper_ids_already_printed.append(last_paper_id)
                 last_paper_id = entry['paper_id']
-                last_section_title = entry['section_title']
-                
-                curr_entry = entry
+                curr_paper = dict()
+                curr_paper[sec_title] = entry
 
     outfile.close()
 
