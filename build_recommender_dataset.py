@@ -22,6 +22,7 @@ import argparse
 
 ESTIMATED_SEC_COUNT = 5567825
 
+
 def main(fields):
     version = 3
     out_version = 4
@@ -35,29 +36,44 @@ def main(fields):
     papers_used = 0
     total_papers = 0
     paper_ids_already_printed = []
-
     curr_paper = None
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}_sorted.jsonl") as f:
-        for idx,line in enumerate(tqdm(f,total=ESTIMATED_SEC_COUNT)):
+        for idx, line in enumerate(tqdm(f, total=ESTIMATED_SEC_COUNT)):
 
             entry = json.loads(line.strip())
             # consistency check to see if paper is really sorted
-            #if entry['paper_id'] in paper_ids_already_printed:
+            # if entry['paper_id'] in paper_ids_already_printed:
             #    raise ValueError('Input file is not sorted')
             # consistency check makes things to slow
 
+            if len(entry['mag_field_of_study']) != 1:
+                # we only consider entries where the field of study is unique
+                continue
+            if entry['section_title'].lower() == 'abstract':
+                # we are not interested in the Abstract section (not part of structure analysis and usually no cites)
+                continue
+            if fields not in entry['mag_field_of_study']:
+                # we only consider entries where one of the field of study is CS
+                continue
 
-            entry.pop('section_index','ignore')
-            entry.pop('file_index','')
-            entry.pop('file_offset','')
-            entry.pop('original_text','')
-            entry.pop('samples','')
-            entry.pop('paper_abstract','')
+            paper_year = entry["paper_year"]
+            if paper_year is None:
+                # we need the year info in the Reranker later on and splits shall be the same for all modules
+                continue
+
+            entry.pop('section_index', 'ignore')
+            entry.pop('file_index', '')
+            entry.pop('file_offset', '')
+            entry.pop('original_text', '')
+            entry.pop('samples', '')
+            entry.pop('paper_abstract', '')
 
             sec_title = entry['section_title']
             # append sections citations if section already occured
             if last_paper_id == entry['paper_id'] and sec_title in curr_paper.keys():
-                curr_paper[sec_title]['outgoing_citations_in_section'] = curr_paper[sec_title]['outgoing_citations_in_section'] + entry['outgoing_citations_in_section']
+                curr_paper[sec_title]['outgoing_citations_in_section'] = curr_paper[sec_title][
+                                                                             'outgoing_citations_in_section'] + entry[
+                                                                             'outgoing_citations_in_section']
             elif last_paper_id == entry['paper_id']:
                 # new section found
                 curr_paper[sec_title] = entry
@@ -65,6 +81,7 @@ def main(fields):
                 # new paper print current paper
                 # First Time is not initialized, but we do not want to print
                 if last_paper_id is not None:
+
                     paper_fields = curr_paper[list(curr_paper.keys())[0]]['mag_field_of_study']
                     if fields in paper_fields and len(paper_fields) == 1:
                         if not printed:
@@ -74,9 +91,10 @@ def main(fields):
                             printed = True
 
                         total_papers += 1
+
                         for sec in curr_paper.keys():
                             outfile.write(f"{json.dumps(curr_paper[sec])}\n")
-                        #paper_ids_already_printed.append(last_paper_id)
+                    # paper_ids_already_printed.append(last_paper_id)
                 last_paper_id = entry['paper_id']
                 curr_paper = dict()
                 curr_paper[sec_title] = entry
@@ -84,6 +102,7 @@ def main(fields):
 
     outfile.close()
     print(f"Keeping {papers_used} of {total_papers} papers")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
