@@ -32,7 +32,9 @@ def main(fields):
 
     last_paper_id = None
 
-    #paper_ids_already_printed = []
+    papers_used = 0
+    total_papers = 0
+    paper_ids_already_printed = []
 
     curr_paper = None
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}_sorted.jsonl") as f:
@@ -63,21 +65,25 @@ def main(fields):
                 # new paper print current paper
                 # First Time is not initialized, but we do not want to print
                 if last_paper_id is not None:
-                    if fields in curr_paper[list(curr_paper.keys())[0]]['mag_field_of_study']:
+                    paper_fields = curr_paper[list(curr_paper.keys())[0]]['mag_field_of_study']
+                    if fields in paper_fields and len(paper_fields) == 1:
                         if not printed:
                             print("Example entry:")
                             for sec in curr_paper.keys():
                                 print(f"{json.dumps(curr_paper[sec])}")
                             printed = True
 
+                        total_papers += 1
                         for sec in curr_paper.keys():
                             outfile.write(f"{json.dumps(curr_paper[sec])}\n")
                         #paper_ids_already_printed.append(last_paper_id)
                 last_paper_id = entry['paper_id']
                 curr_paper = dict()
                 curr_paper[sec_title] = entry
+                
 
     outfile.close()
+    print(f"Keeping {papers_used} of {total_papers} papers")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

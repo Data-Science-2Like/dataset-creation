@@ -203,7 +203,7 @@ def main(field=None):
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
         for line in tqdm(f, total=estimated_sec_count):
             entry = json.loads(line.strip())
-            if field in entry['mag_field_of_study'] and len(entry['mag_field_of_study']):
+            if field in entry['mag_field_of_study'] and len(entry['mag_field_of_study']) == 1:
                 total_section_count += 1
                 if entry['paper_id'] in paper_ids.keys():
                     paper_section_counts[entry['paper_id']] += 1
