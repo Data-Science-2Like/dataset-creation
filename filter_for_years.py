@@ -74,7 +74,8 @@ def filter_full_dataset(path_to_file, path_to_outfile):
                 candidate_papers.add(id)
             
             # if there is at least one citation remaining this paper is also a citing paper
-            if len(entry['outgoing_citations']):
+            if len(entry['outgoing_citations']) > 0 and valid_paper_years[paper_id] >= 2002:
+                # we only want citing papers beginning with the year 2002
                 citing_papers.add(paper_id)
             
             for idx in range(0,len(entry['samples'])):
