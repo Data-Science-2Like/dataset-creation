@@ -315,10 +315,10 @@ def dataset_worker(ab):
                     final_samples = []
 
                 if len(final_samples) > 0:
-                    cits_in_section = list()
+                    cits_in_paragraph = list()
                     for fs in final_samples:
                         if fs['ref_ids']:
-                            cits_in_section = cits_in_section + [ref_id for ref_id in fs['ref_ids']]
+                            cits_in_paragraph = cits_in_paragraph + [ref_id for ref_id in fs['ref_ids']]
 
 
                     dataset.append({
@@ -329,14 +329,14 @@ def dataset_worker(ab):
                         'mag_field_of_study': metadata['mag_field_of_study'],
                         'original_text': sec['text'],
                         'section_title': sec['section'],
-                        'is_arxiv' : True if 'arxiv' in metadata.keys() else False,
+                        'is_arxiv' : True if 'arxiv_id' in metadata.keys() else False,
                         'samples': final_samples,
                         'paper_title' : metadata['title'],
                         'paper_abstract' : metadata['abstract'],
                         'paper_year' : metadata['year'],
                         'paper_authors' : metadata['authors'],
                         'outgoing_citations' : metadata['outbound_citations'],
-                        'outgoing_citations_in_section' : cits_in_section
+                        'outgoing_citations_in_paragraph' : cits_in_paragraph
                     })
     return ab,dataset
 
@@ -348,7 +348,7 @@ if __name__ == "__main__":
 
     # with open(f"{data_loc}/citation_needed_data_v4.tsv", 'wt') as f:
     #     f.write("text\toriginal_citation\tlabel\n")
-    version = 3
+    version = 5
     completed = []
     if Path(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt').exists():
         with open(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt') as f:
