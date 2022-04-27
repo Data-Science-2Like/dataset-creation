@@ -37,9 +37,9 @@ def filter_full_dataset(path_to_file, path_to_outfile):
             if 'Computer Science' not in entry['mag_field_of_study']:
                 # we only consider entries where on of the field of study is CS
                 continue
-            if entry['section_title'].lower() == 'abstract':
+            #if entry['section_title'].lower() == 'abstract':
                 # we are not interested in the abstract section
-                continue
+                #continue
             if 'paper_year' not in entry.keys() or entry['paper_year'] is None:
                 # we want the paper to have a year entry
                 continue
@@ -68,19 +68,18 @@ def filter_full_dataset(path_to_file, path_to_outfile):
             entry['outgoing_citations'] = list(filter(check,entry['outgoing_citations']))
             entry['outgoing_citations_in_paragraph'] = list(filter(check,entry['outgoing_citations_in_paragraph']))
             
-            # we only need to add outgoing_citations, because candidate_papers is a set and
-            # and outgoing_citations a superset of outgoing_citations_in_paragraph
-            for id in entry['outgoing_citations']:
-                candidate_papers.add(id)
-            
             # if there is at least one citation remaining this paper is also a citing paper
             if len(entry['outgoing_citations']) > 0 and valid_paper_years[paper_id] >= 2002:
+                # we only need to add outgoing_citations, because candidate_papers is a set and
+                # and outgoing_citations a superset of outgoing_citations_in_paragraph
+                for id in entry['outgoing_citations']:
+                    candidate_papers.add(id)
                 # we only want citing papers beginning with the year 2002
                 citing_papers.add(paper_id)
-            
+
             for idx in range(0,len(entry['samples'])):
-                if entry['samples'][0]['ref_ids']:
-                    entry['samples'][0]['ref_ids'] = list(filter(check,entry['samples'][0]['ref_ids']))
+                if entry['samples'][idx]['ref_ids']:
+                    entry['samples'][idx]['ref_ids'] = list(filter(check,entry['samples'][idx]['ref_ids']))
 
             out_file.write(f"{json.dumps(entry)}\n")
 
