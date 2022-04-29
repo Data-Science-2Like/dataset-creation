@@ -3,6 +3,7 @@ import time
 from multiprocessing import Pool
 import json
 import argparse
+import pickle
 
 # dataset.append({
 #                         'paper_id': metadata['paper_id'],
@@ -24,43 +25,40 @@ ESTIMATED_SEC_COUNT = 5567825
 
 
 def main(fields):
-    version = 3
-    out_version = 4
+    version = 5
+    out_version = 5
 
     printed = False
 
     outfile = open(f"../data/aae_recommender_with_section_info_v{out_version}.jsonl", 'a+')
 
+    citing_papers = pickle.load(open("../data/citing_paper.pickle",'rb'))
+
+    candidate_papers = pickle.load(open("../data/candidate_papers.pickle",'rb'))
+
+    cit_count = 0
+    cand_count = 0
+
+
     last_paper_id = None
 
-    papers_used = 0
-    total_papers = 0
     paper_ids_already_printed = []
     curr_paper = None
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}_sorted.jsonl") as f:
         for idx, line in enumerate(tqdm(f, total=ESTIMATED_SEC_COUNT)):
 
             entry = json.loads(line.strip())
-            # consistency check to see if paper is really sorted
-            # if entry['paper_id'] in paper_ids_already_printed:
-            #    raise ValueError('Input file is not sorted')
-            # consistency check makes things to slow
-
-            if len(entry['mag_field_of_study']) != 1:
-                # we only consider entries where the field of study is unique
-                continue
-            if entry['section_title'].lower() == 'abstract':
-                # we are not interested in the Abstract section (not part of structure analysis and usually no cites)
-                continue
-            if fields not in entry['mag_field_of_study']:
-                # we only consider entries where one of the field of study is CS
+            
+            if entry['paper_id'] not in citing_papers and entry['paper_id'] not in candidate_papers:
+                # only use citing papers
                 continue
 
-            paper_year = entry["paper_year"]
-            if paper_year is None:
-                # we need the year info in the Reranker later on and splits shall be the same for all modules
-                continue
+            if entry['paper_id'] not in citing_papers:
+                # only a candidate paper
+                entry['outgoing_citations'] = []
+                entry['outgoing_citations_in_paragraph'] = []
 
+            
             entry.pop('section_index', 'ignore')
             entry.pop('file_index', '')
             entry.pop('file_offset', '')
@@ -71,9 +69,9 @@ def main(fields):
             sec_title = entry['section_title']
             # append sections citations if section already occured
             if last_paper_id == entry['paper_id'] and sec_title in curr_paper.keys():
-                curr_paper[sec_title]['outgoing_citations_in_section'] = curr_paper[sec_title][
-                                                                             'outgoing_citations_in_section'] + entry[
-                                                                             'outgoing_citations_in_section']
+                curr_paper[sec_title]['outgoing_citations_in_paragraph'] = curr_paper[sec_title][
+                                                                             'outgoing_citations_in_paragraph'] + entry[
+                                                                             'outgoing_citations_in_paragraph']
             elif last_paper_id == entry['paper_id']:
                 # new section found
                 curr_paper[sec_title] = entry
@@ -90,7 +88,11 @@ def main(fields):
                                 print(f"{json.dumps(curr_paper[sec])}")
                             printed = True
 
-                        total_papers += 1
+                        if last_paper_id in citing_papers:
+                            cit_count += 1
+
+                        if last_paper_id in candidate_papers:
+                            cand_count += 1
 
                         for sec in curr_paper.keys():
                             outfile.write(f"{json.dumps(curr_paper[sec])}\n")
@@ -101,7 +103,7 @@ def main(fields):
                 
 
     outfile.close()
-    print(f"Keeping {papers_used} of {total_papers} papers")
+    print(f"Citing: {cit_count} and Candidate: {cand_count} papers")
 
 
 if __name__ == "__main__":
