@@ -1,4 +1,5 @@
 import json
+import pickle
 
 
 def _check_consistency_of_data(json_entry):
@@ -41,7 +42,8 @@ def _is_every_sample_non_conform(json_entry):
     return True
 
 
-def create_citeworth_dataset(path_to_s2orc_file, max_train_year, max_val_year, check_consistency_of_data=False):
+def create_citeworth_dataset(path_to_s2orc_file, max_train_year, max_val_year,
+                             citing_papers=None, check_consistency_of_data=False):
     with open(path_to_s2orc_file) as s2orc_file, \
             open('dataset/train.jsonl', 'w') as train_file, \
             open('dataset/val.jsonl', 'w') as val_file, \
@@ -52,21 +54,24 @@ def create_citeworth_dataset(path_to_s2orc_file, max_train_year, max_val_year, c
             if i % 100000 == 0:
                 print(i)
             entry = json.loads(line)
+            if citing_papers is not None and entry["paper_id"] not in citing_papers:
+                # we do not consider this as a citing paper and hence the entry will not be part of the dataset
+                continue
             if check_consistency_of_data:
                 _check_consistency_of_data(entry)
             if len(entry["mag_field_of_study"]) != 1:
                 # we only consider entries where the field of study is unique
-                continue
+                raise Exception("More than one mag_field_of_study!")
             if "Computer Science" not in entry["mag_field_of_study"]:
                 # we only consider entries where one of the field of study is CS
-                continue
+                raise Exception("The mag_field_of_study is not Computer Science!")
             if entry["section_title"].lower() == "abstract":
                 # we are not interested in the Abstract section (not part of structure analysis and usually no cites)
                 continue
             paper_year = entry["paper_year"]
             if paper_year is None:
                 # we need the year info in the Reranker later on and splits shall be the same for all modules
-                continue
+                raise Exception("The paper_year needs to be known.")
             if not _is_every_sample_valid(entry):
                 # we do not want to have invalid samples in our dataset
                 continue
@@ -89,5 +94,7 @@ def create_citeworth_dataset(path_to_s2orc_file, max_train_year, max_val_year, c
 
 if __name__ == "__main__":
     # todo: uncomment the below call and set parameters as wished
-    # create_citeworth_dataset('../data_s2orc/citation_needed_data_contextualized_with_removal_v3.jsonl', 2017, 2018)
+    # citing_papers = pickle.load(open('../data_s2orc/citing_paper.pickle', 'rb'))
+    # create_citeworth_dataset('../data_s2orc/citation_needed_data_filtered_advanced_v5.jsonl', 2017, 2018,
+    #                          citing_papers=citing_papers, check_consistency_of_data=True)
     pass
