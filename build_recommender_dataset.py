@@ -38,7 +38,7 @@ def main(fields):
 
     cit_count = 0
     cand_count = 0
-
+    total_count = 0
 
     last_paper_id = None
 
@@ -93,6 +93,7 @@ def main(fields):
 
                         if last_paper_id in candidate_papers:
                             cand_count += 1
+                        total_count += 1
 
                         for sec in curr_paper.keys():
                             outfile.write(f"{json.dumps(curr_paper[sec])}\n")
@@ -104,7 +105,7 @@ def main(fields):
 
     outfile.close()
     print(f"Citing: {cit_count} and Candidate: {cand_count} papers")
-
+    print(f"Total paper count: {total_count}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

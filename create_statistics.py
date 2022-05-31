@@ -164,7 +164,7 @@ def get_years(ab):
     return p_years
 
 def main(field=None):
-    version = 3
+    version = 5
     
 
     estimated_sec_count = 5567825
@@ -199,6 +199,44 @@ def main(field=None):
                     print(error.traceback)
 
     print(f"Found {len(paper_years)} paper")
+    print("Collection Sections sizes")
+
+    section_lengths = {}
+    sl_weights = {}
+    curr_paper = {}
+    last_paper_id = None
+    with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}_sorted.jsonl") as f:
+        for line in tqdm(tqdm(f, total=estimated_sec_count)):
+            entry = json.loads(line.strip())
+            
+
+            st = get_mapping(entry['section_title'].lower())
+            if last_paper_id == entry['paper_id'] and st in curr_paper.keys():
+                # append section length
+                curr_paper[st] += len(entry['samples'])
+            elif last_paper_id is None or last_paper_id == entry['paper_id']:
+                # new section found
+                curr_paper[st] = len(entry['samples'])
+            else:
+                if last_paper_id is None:
+                    last_paper_id = entry['paper_id']
+                    continue
+                # new paper
+                for sec in curr_paper.keys():
+                    if sec in section_lengths.keys():
+                        section_lengths[sec] = calc_avg(section_lengths[sec], sl_weights[sec], curr_paper[sec])
+                        sl_weights[sec] += 1
+                    else:
+                        section_lengths[sec] = curr_paper[sec]
+                        sl_weights[sec] = 1
+                curr_paper = {}
+
+            last_paper_id = entry['paper_id']
+
+    for section in section_lengths.keys():
+        print(f"Section {section}: Avg Sentences {section_lengths[section]}")
+
+
     print("Collecting statistics")
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
         for line in tqdm(f, total=estimated_sec_count):
@@ -216,9 +254,11 @@ def main(field=None):
                         sec_stats[st]['avg_count'] = 0
                         sec_stats[st]['avg_age'] = 0
                         sec_stats[st]['weight'] = 0
+                        sec_stats[st]['avg_sent'] = 0
 
                     cit_count = len(list(filter(lambda s : s['label'] == 'check-worthy',entry['samples']))) / len(entry['samples'])
 
+                    p_sum = len(entry['samples'])
                     years = []
                     for s in entry['samples']:
                         if 'ref_ids' in s.keys() and s['ref_ids'] is not None and len(s['ref_ids']) > 0:
@@ -231,6 +271,7 @@ def main(field=None):
                     ow = sec_stats[st]['weight']
                     sec_stats[st]['avg_count'] = calc_avg(sec_stats[st]['avg_count'],ow, cit_count)
                     sec_stats[st]['avg_age'] = calc_avg(sec_stats[st]['avg_age'], ow, avg_age)
+                    sec_stats[st]['avg_sent'] = calc_avg(sec_stats[st]['avg_sent'], ow, p_sum)
                     sec_stats[st]['weight'] += 1
 
                     continue
@@ -273,6 +314,7 @@ def main(field=None):
 
     for section in sec_stats.keys():
         print(f"Section {section}: Avg Count: {sec_stats[section]['avg_count']} Avg Age: {sec_stats[section]['avg_age']}, Weight: {sec_stats[section]['weight']}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
