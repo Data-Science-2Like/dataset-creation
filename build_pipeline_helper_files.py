@@ -46,7 +46,7 @@ def main(fields):
             entry = json.loads(line.strip())
             if entry['paper_id'] not in citing_papers and entry['paper_id'] not in candidate_papers:
                 continue
-            title_to_id[entry['paper_title']] = entry['paper_id']
+            title_to_id[entry['paper_title'].lower()] = entry['paper_id']
 
 
     json.dump(title_to_id,outfile)
