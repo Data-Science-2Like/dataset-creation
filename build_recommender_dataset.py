@@ -90,17 +90,18 @@ def main(fields,paper_wise= False):
 
                         if last_paper_id in citing_papers:
                             cit_count += 1
+
+                        if last_paper_id in candidate_papers:
+                            cand_count += 1
+                        total_count += 1
+                        
                         if paper_wise:
                             # only write once and use the outgoing_citations field for ref
                             first = curr_paper.keys()[0]
                             outfile.write(f"{json.dumps(curr_paper[first])}\n")
                         else:
-                        if last_paper_id in candidate_papers:
-                            cand_count += 1
-                        total_count += 1
-
-                        for sec in curr_paper.keys():
-                            outfile.write(f"{json.dumps(curr_paper[sec])}\n")
+                            for sec in curr_paper.keys():
+                                outfile.write(f"{json.dumps(curr_paper[sec])}\n")
                     # paper_ids_already_printed.append(last_paper_id)
                 last_paper_id = entry['paper_id']
                 curr_paper = dict()
