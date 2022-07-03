@@ -30,7 +30,7 @@ def main(fields,paper_wise= False):
 
     printed = False
 
-    outfile = open(f"../data/aae_recommender_with_section_info_v{out_version}.jsonl", 'a+')
+    outfile = open(f"../data/aae_recommender_with_section_info_v{out_version}{'_papers' if paper_wise else ''}.jsonl", 'a+')
 
     citing_papers = pickle.load(open("../data/citing_paper.pickle",'rb'))
 
@@ -94,7 +94,7 @@ def main(fields,paper_wise= False):
                         if last_paper_id in candidate_papers:
                             cand_count += 1
                         total_count += 1
-                        
+
                         if paper_wise:
                             # only write once and use the outgoing_citations field for ref
                             first = curr_paper.keys()[0]
