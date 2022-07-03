@@ -97,7 +97,7 @@ def main(fields,paper_wise= False):
 
                         if paper_wise:
                             # only write once and use the outgoing_citations field for ref
-                            first = curr_paper.keys()[0]
+                            first = list(curr_paper.keys())[0]
                             outfile.write(f"{json.dumps(curr_paper[first])}\n")
                         else:
                             for sec in curr_paper.keys():
