@@ -24,7 +24,7 @@ import pickle
 ESTIMATED_SEC_COUNT = 5567825
 
 
-def main(fields):
+def main(fields,paper_wise= False):
     version = 5
     out_version = 5
 
@@ -90,7 +90,11 @@ def main(fields):
 
                         if last_paper_id in citing_papers:
                             cit_count += 1
-
+                        if paper_wise:
+                            # only write once and use the outgoing_citations field for ref
+                            first = curr_paper.keys()[0]
+                            outfile.write(f"{json.dumps(curr_paper[first])}\n")
+                        else:
                         if last_paper_id in candidate_papers:
                             cand_count += 1
                         total_count += 1
@@ -110,7 +114,8 @@ def main(fields):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--fields', default="Computer Science", help='fields which are going to be used')
+    parser.add_argument('--paper_wise', default=False,action="store_true", help='fields which are going to be used')
 
     args = parser.parse_args()
     arguments = vars(args)
-    main(arguments["fields"])
+    main(arguments["fields"],arguments['paper_wise'])
