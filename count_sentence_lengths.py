@@ -27,6 +27,10 @@ def check_if_valid(current_paper, paper_id):
 def filter_full_dataset(path_to_file):
     max_paragraph_length = 0
     max_sentence_length = 0
+    resolution = 50
+    hist_len = 2050 // 50
+    sent_hist = [0 for i in range(0,hist_len)]
+    para_hist = [0 for i in range(0,hist_len)]
     with open(path_to_file) as data_file:
 
         # first filter for legitimate candidate and citing papers and remember ids
@@ -85,13 +89,25 @@ def filter_full_dataset(path_to_file):
             tmp_max_par = len(entry['original_text'].split(' '))
             if max_paragraph_length < tmp_max_par:
                 max_paragraph_length = tmp_max_par
+            para_hist[tmp_max_par // resolution] += 1
 
             tmp_max_sent = max([len(x['original_text'].split(' ')) for x in entry['samples']])
             if max_sentence_length < tmp_max_sent:
                 max_sentence_length = tmp_max_sent
+            for sent in entry['samples']:
+                sent_len = len(sent['original_text'].split(' '))
+                sent_hist[sent_len // resolution] += 1
 
     print(f"Max sentence length: {max_sentence_length} words")
     print(f"Max paragraph length: {max_paragraph_length} words")
+
+    print("Sentence Histogram")
+    for idx, val in enumerate(sent_hist):
+        print(f"{idx * resolution}: {val}")
+
+    print("Paragraph Histogram")
+    for idx, val in enumerate(para_hist):
+        print(f"{idx * resolution}: {val}")
 
 if __name__ == "__main__":
     in_version = 5
