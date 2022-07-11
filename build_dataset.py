@@ -317,7 +317,7 @@ def dataset_worker(ab):
                 if len(final_samples) > 0:
                     cits_in_paragraph = list()
                     for fs in final_samples:
-                        if fs['ref_ids']:
+                        if fs['ref_ids'] and fs['label_cite'] == 'check-worthy':
                             cits_in_paragraph = cits_in_paragraph + [ref_id for ref_id in fs['ref_ids']]
 
 
@@ -348,7 +348,7 @@ if __name__ == "__main__":
 
     # with open(f"{data_loc}/citation_needed_data_v4.tsv", 'wt') as f:
     #     f.write("text\toriginal_citation\tlabel\n")
-    version = 5
+    version = 6
     completed = []
     if Path(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt').exists():
         with open(f'../data/citation_needed_data_contextualized_with_removal_v{version}_completed.txt') as f:
