@@ -52,10 +52,11 @@ def _add_citation_contexts_to_file(json_entry, file, candidate_paper_ids=None):
         if sample["label_cite"] != "check-worthy":
             # only cite-worthy sentences are citation contexts
             continue
+        citing_id = json_entry["paper_id"]
         if candidate_paper_ids is None:
-            ref_ids = sample["ref_ids"]
+            ref_ids = [ref_id for ref_id in sample["ref_ids"] if ref_id != citing_id]
         else:
-            ref_ids = [ref_id for ref_id in sample["ref_ids"] if ref_id in candidate_paper_ids]
+            ref_ids = [ref_id for ref_id in sample["ref_ids"] if (ref_id in candidate_paper_ids and ref_id != citing_id)]
         if not ref_ids:
             # only sentences citing at least one paper from the list of candidate papers are considered
             continue
