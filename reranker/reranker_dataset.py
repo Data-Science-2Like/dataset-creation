@@ -71,7 +71,7 @@ def _add_citation_contexts_to_file(json_entry, file, candidate_paper_ids=None):
             "paper_id": json_entry["paper_id"],
             "ref_ids": list(set(ref_ids)),
             "citation_context": sample["text"],
-            "text": paragraph_text.replace(sample["text"], "TARGETSENT"),
+            "text": paragraph_text,
             "section_title": json_entry["section_title"]
         }
         ref_ids_in_paragraph.update(ref_ids)
