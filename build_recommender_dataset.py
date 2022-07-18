@@ -25,16 +25,16 @@ ESTIMATED_SEC_COUNT = 5567825
 
 
 def main(fields,paper_wise= False):
-    version = 5
-    out_version = 5
+    version = 7
+    out_version = 7
 
     printed = False
 
     outfile = open(f"../data/aae_recommender_with_section_info_v{out_version}{'_papers' if paper_wise else ''}.jsonl", 'a+')
 
-    citing_papers = pickle.load(open("../data/citing_paper.pickle",'rb'))
+    citing_papers = pickle.load(open(f"../data/citing_papers_v{version}.pickle",'rb'))
 
-    candidate_papers = pickle.load(open("../data/candidate_papers.pickle",'rb'))
+    candidate_papers = pickle.load(open(f"../data/candidate_papers_v{version}.pickle",'rb'))
 
     cit_count = 0
     cand_count = 0

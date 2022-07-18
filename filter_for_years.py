@@ -15,6 +15,10 @@ max_year = 2020
 ESTIMATED_SEC_COUNT = 5567825
 
 def check_if_valid(current_paper, paper_id):
+    if current_paper == paper_id:
+        # we want to remove self citations
+        return False
+
     if paper_id in valid_papers:
         # we don't want citations into the future
         if valid_paper_years[current_paper] < valid_paper_years[paper_id]:
@@ -69,10 +73,10 @@ def filter_full_dataset(path_to_file, path_to_outfile):
             entry['outgoing_citations_in_paragraph'] = list(filter(check,entry['outgoing_citations_in_paragraph']))
             
             # if there is at least one citation remaining this paper is also a citing paper
-            if len(entry['outgoing_citations']) > 0 and valid_paper_years[paper_id] >= 2002:
+            if len(entry['outgoing_citations_in_paragraph']) > 0 and valid_paper_years[paper_id] >= 2002:
                 # we only need to add outgoing_citations, because candidate_papers is a set and
                 # and outgoing_citations a superset of outgoing_citations_in_paragraph
-                for id in entry['outgoing_citations']:
+                for id in entry['outgoing_citations_in_paragraph']:
                     candidate_papers.add(id)
                 # we only want citing papers beginning with the year 2002
                 citing_papers.add(paper_id)
@@ -86,15 +90,18 @@ def filter_full_dataset(path_to_file, path_to_outfile):
 
     print(f"{len(candidate_papers)} candidate papers remaining")
     print(f"{len(citing_papers)} citing papers remaining")
-    with open(Path(path_to_outfile).parent / 'candidate_papers.pickle','wb') as handle:
+
+    ver = 7
+
+    with open(Path(path_to_outfile).parent / f'candidate_papers_v{ver}.pickle','wb') as handle:
         pickle.dump(candidate_papers, handle)
-    with open(Path(path_to_outfile).parent / 'citing_paper.pickle', 'wb') as handle:
+    with open(Path(path_to_outfile).parent / f'citing_papers_v{ver}.pickle', 'wb') as handle:
         pickle.dump(citing_papers, handle)
 
 
 if __name__ == "__main__":
-    in_version = 5
-    out_version = 5
+    in_version = 6
+    out_version = 7
     
     in_path = f"../data/citation_needed_data_contextualized_with_removal_v{in_version}.jsonl"
     out_path = f"../data/citation_needed_data_filtered_advanced_v{out_version}.jsonl"
