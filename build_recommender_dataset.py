@@ -41,7 +41,7 @@ def main(fields,paper_wise= False):
     total_count = 0
 
     last_paper_id = None
-
+    testing_paper_set = set()
     paper_ids_already_printed = []
     curr_paper = None
     with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}_sorted.jsonl") as f:
@@ -58,7 +58,13 @@ def main(fields,paper_wise= False):
                 entry['outgoing_citations'] = []
                 entry['outgoing_citations_in_paragraph'] = []
 
-            
+            # Additional flags for better debugging
+            entry['is_citing_paper'] = True if entry['paper_id'] in citing_papers else False
+            entry['is_candidate_paper'] = True if entry['paper_id'] in candidate_papers else False
+
+            if entry['paper_id'] in citing_papers and int(entry['paper_year']) >= 2019:
+                testing_paper_set.add(entry['paper_id'])
+
             entry.pop('section_index', 'ignore')
             entry.pop('file_index', '')
             entry.pop('file_offset', '')
@@ -111,6 +117,7 @@ def main(fields,paper_wise= False):
     outfile.close()
     print(f"Citing: {cit_count} and Candidate: {cand_count} papers")
     print(f"Total paper count: {total_count}")
+    print(f"Testing paper count: {len(testing_paper_set)}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

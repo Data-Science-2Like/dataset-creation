@@ -164,7 +164,7 @@ def get_years(ab):
     return p_years
 
 def main(field=None):
-    version = 5
+    version = 7
     
 
     estimated_sec_count = 5567825
@@ -205,10 +205,14 @@ def main(field=None):
     sl_weights = {}
     curr_paper = {}
     last_paper_id = None
-    with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}_sorted.jsonl") as f:
+    with open(f"../data/citation_needed_data_filtered_advanced_v{version}.jsonl") as f:
         for line in tqdm(tqdm(f, total=estimated_sec_count)):
             entry = json.loads(line.strip())
             
+
+            # remove papers which are to old to check for other values
+            #if paper_years[entry['paper_id']] and int(paper_years[entry['paper_id']]) < 2019:
+            #    continue
 
             st = get_mapping(entry['section_title'].lower())
             if last_paper_id == entry['paper_id'] and st in curr_paper.keys():
@@ -238,9 +242,15 @@ def main(field=None):
 
 
     print("Collecting statistics")
-    with open(f"../data/citation_needed_data_contextualized_with_removal_v{version}.jsonl") as f:
+    with open(f"../data/citation_needed_data_filtered_advanced_v{version}.jsonl") as f:
         for line in tqdm(f, total=estimated_sec_count):
             entry = json.loads(line.strip())
+
+            # remove papers which are to old to check for other values
+            #if paper_years[entry['paper_id']] and int(paper_years[entry['paper_id']]) < 2019:
+            #    continue
+
+
             if field in entry['mag_field_of_study'] and len(entry['mag_field_of_study']) == 1:
                 total_section_count += 1
                 if entry['paper_id'] in paper_ids.keys():
@@ -281,10 +291,10 @@ def main(field=None):
                 total_paper_count += 1
                 if entry['paper_year'] not in paper_counts.keys():
                     paper_counts[entry['paper_year']] = 0
-                    paper_ids_per_year[entry['paper_year']] = []
+                    paper_ids_per_year[entry['paper_year']] = set()
                 
 
-                paper_ids_per_year[entry['paper_year']].append(entry['paper_id'])
+                paper_ids_per_year[entry['paper_year']].add(entry['paper_id'])
                 paper_section_counts[entry['paper_id']] = 1
                 paper_counts[entry['paper_year']] += 1
 
@@ -300,7 +310,7 @@ def main(field=None):
 
     for year in years:
         print("-"*67)
-        print(f"Year: {year} counts {paper_counts[year]} papers ")
+        print(f"Year: {year} counts {len(paper_ids_per_year[year])} papers ")
         year_section_count = 0
         for paper in paper_ids_per_year[year]:
             year_section_count += paper_section_counts[paper]
