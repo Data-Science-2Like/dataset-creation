@@ -65,6 +65,10 @@ def main(fields,paper_wise= False):
             if entry['paper_id'] in citing_papers and int(entry['paper_year']) >= 2019:
                 testing_paper_set.add(entry['paper_id'])
 
+            #if entry['paper_id'] not in candidate_papers:
+            #    # only a citing paper
+
+
             entry.pop('section_index', 'ignore')
             entry.pop('file_index', '')
             entry.pop('file_offset', '')
@@ -78,7 +82,8 @@ def main(fields,paper_wise= False):
                 curr_paper[sec_title]['outgoing_citations_in_paragraph'] = curr_paper[sec_title][
                                                                              'outgoing_citations_in_paragraph'] + entry[
                                                                              'outgoing_citations_in_paragraph']
-            elif last_paper_id == entry['paper_id']:
+            elif last_paper_id == entry['paper_id'] and len(entry['outgoing_citations_in_paragraph']) > 0:
+                # we ony want to add sections which also have citation links
                 # new section found
                 curr_paper[sec_title] = entry
             else:
