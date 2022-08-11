@@ -30,7 +30,7 @@ def main(fields,paper_wise= False):
 
     printed = False
 
-    outfile = open(f"../data/aae_recommender_with_section_info_v{out_version}{'_papers' if paper_wise else ''}.jsonl", 'a+')
+    outfile = open(f"../data/aae_recommender_with_section_info_v{out_version}{'_papers' if paper_wise else ''}.jsonl", 'w')
 
     citing_papers = pickle.load(open(f"../data/citing_papers_v{version}.pickle",'rb'))
 
@@ -51,6 +51,11 @@ def main(fields,paper_wise= False):
             
             if entry['paper_id'] not in citing_papers and entry['paper_id'] not in candidate_papers:
                 # only use citing papers
+                continue
+
+
+            # skip empty sections of citing papers, there has to be at least one none empty section
+            if entry['paper_id'] in citing_papers and len(entry['outgoing_citations_in_paragraph']) == 0:
                 continue
 
             if entry['paper_id'] not in citing_papers:
