@@ -1,5 +1,6 @@
 import json
 import pickle
+from typing import Set
 
 
 def _check_causality_of_citations(path_to_papers_jsonl):
@@ -56,7 +57,8 @@ def _add_citation_contexts_to_file(json_entry, file, candidate_paper_ids=None):
         if candidate_paper_ids is None:
             ref_ids = [ref_id for ref_id in sample["ref_ids"] if ref_id != citing_id]
         else:
-            ref_ids = [ref_id for ref_id in sample["ref_ids"] if (ref_id in candidate_paper_ids and ref_id != citing_id)]
+            ref_ids = [ref_id for ref_id in sample["ref_ids"] if
+                       (ref_id in candidate_paper_ids and ref_id != citing_id)]
         if not ref_ids:
             # only sentences citing at least one paper from the list of candidate papers are considered
             continue
@@ -79,8 +81,24 @@ def _add_citation_contexts_to_file(json_entry, file, candidate_paper_ids=None):
     return ref_ids_in_paragraph
 
 
-def create_contexts_files(path_to_s2orc_file, max_train_year, max_val_year, candidate_papers=None, citing_papers=None,
-                          check_causality_of_citations_in_s2orc_file=False):
+def create_contexts_files(path_to_s2orc_file: str, max_train_year: int, max_val_year: int,
+                          candidate_papers: Set[str] = None, citing_papers: Set[str] = None,
+                          check_causality_of_citations_in_s2orc_file: bool = False):
+    """
+    Create the *_contexts.jsonl files of the S2ORC_Reranker dataset.
+
+    :param path_to_s2orc_file: path to our Modified S2ORC dataset jsonl file
+    :param max_train_year: all papers published in or before this year are part of the train split
+    :param max_val_year: all papers published between max_train_year (exclusive) and max_val_year (inclusive) are part
+                            of the validation split
+    :param candidate_papers: set of paper ids
+                             if given, only papers with these ids are considered as candidate papers during the dataset creation
+    :param citing_papers: set of paper ids
+                          if given, only papers with these ids are considered as a citing paper for the dataset creation
+    :param check_causality_of_citations_in_s2orc_file: whether to perform additional checks on the publication years of
+                                                        citing and cited papers in our Modified S2ORC dataset
+                                                        (this check should be passed, otherwise there is an issue in our Modified S2ORC)
+    """
     if check_causality_of_citations_in_s2orc_file:
         print("check causality of citations in S2ORC file")
         _check_causality_of_citations(path_to_s2orc_file)
@@ -124,8 +142,21 @@ def create_contexts_files(path_to_s2orc_file, max_train_year, max_val_year, cand
     return cited_paper_ids, citing_paper_ids
 
 
-def create_papers_file(path_to_s2orc_file, cited_paper_ids=None, citing_paper_ids=None,
-                       check_causality_of_citations_in_s2orc_file=False):
+def create_papers_file(path_to_s2orc_file: str, cited_paper_ids: Set[str] = None, citing_paper_ids: Set[str] = None,
+                       check_causality_of_citations_in_s2orc_file: bool = False):
+    """
+    Create the papers.jsonl file of the S2ORC_Reranker dataset.
+
+    :param path_to_s2orc_file: path to our Modified S2ORC dataset jsonl file
+    :param cited_paper_ids: set of all paper ids that are cited papers in the S2ORC_Reranker dataset
+                            if given, only papers with these ids and ids in citing_paper_ids are considered for the dataset creation
+                            moreover, the "is_cited_paper" entry will be set to True if the paper is contained in this set
+    :param citing_paper_ids: set of all paper ids that are citing papers in the S2ORC_Reranker dataset
+                             if given, only papers with these ids and ids in cited_paper_ods are considered for the dataset creation
+    :param check_causality_of_citations_in_s2orc_file: whether to perform additional checks on the publication years of
+                                                        citing and cited papers in our Modified S2ORC dataset
+                                                        (this check should be passed, otherwise there is an issue in our Modified S2ORC)
+    """
     if check_causality_of_citations_in_s2orc_file:
         print("check causality of citations in S2ORC file")
         _check_causality_of_citations(path_to_s2orc_file)
@@ -150,8 +181,24 @@ def create_papers_file(path_to_s2orc_file, cited_paper_ids=None, citing_paper_id
                 _add_paper_to_file(entry, papers_file, added_paper_ids, is_cited_paper=is_cited_paper)
 
 
-def create_reranker_dataset(path_to_s2orc_file, max_train_year, max_val_year,
-                            candidate_papers=None, citing_papers=None, check_causality_of_citations_in_s2orc_file=False):
+def create_reranker_dataset(path_to_s2orc_file: str, max_train_year: int, max_val_year: int,
+                            candidate_papers: Set[str] = None, citing_papers: Set[str] = None,
+                            check_causality_of_citations_in_s2orc_file: bool = False):
+    """
+    Create the S2ORC_Reranker dataset from our Modified S2ORC dataset (papers.jsonl and *_contexts.jsonl files).
+
+    :param path_to_s2orc_file: path to our Modified S2ORC dataset jsonl file
+    :param max_train_year: all papers published in or before this year are part of the train split
+    :param max_val_year: all papers published between max_train_year (exclusive) and max_val_year (inclusive) are part
+                            of the validation split
+    :param candidate_papers: set of paper ids
+                             if given, only papers with these ids are considered as candidate papers during the dataset creation
+    :param citing_papers: set of paper ids
+                          if given, only papers with these ids are considered as a citing paper for the dataset creation
+    :param check_causality_of_citations_in_s2orc_file: whether to perform additional checks on the publication years of
+                                                        citing and cited papers in our Modified S2ORC dataset
+                                                        (this check should be passed, otherwise there is an issue in our Modified S2ORC)
+    """
     if check_causality_of_citations_in_s2orc_file:
         print("check causality of citations in S2ORC file")
         _check_causality_of_citations(path_to_s2orc_file)
