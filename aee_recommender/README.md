@@ -2,7 +2,8 @@
 
 ## Usage
 
-```python build_recommender_dataset.py [--fields FIELD --paper_wise]
+```
+python build_recommender_dataset.py [--fields FIELD --paper_wise]
 ```
 
 The preprocessed data from the Modified S2ORC dataset has to be placed in the `../data` directory.
