@@ -1,14 +1,18 @@
-# Create the Dataset for the Reranker module from our preprocessed S2ORC dataset
+# Create the Dataset for the Reranker module from our Modified S2ORC dataset
 
 ## Usage
-The resulting files are output in this `dataset` directory.
+You may place the Modified S2ORC dataset into the `../data_s2orc` directory.
 
-There is no commandline interface provided. Please, uncomment the method call and set its parameters directly in the `reranker_dataset.py` file.  
-You may place the S2ORC dataset into the `../data_s2orc` directory.
+There is no commandline interface provided.
+Please, uncomment the respective method call at the bottom of the `reranker_dataset.py` file and set the parameters directly there.
+The parameters of the methods are documented in the code. 
+
+The resulting files of the S2ORC_Reranker dataset are output in this `dataset` directory.
+For more information on the individual files, continue reading, please.
 
 ## Further Information
 We generally only consider papers that uniquely belong to the field of "Computer Science" and where the year of publication is known.  
-Further, we remove any citation contexts belonging to the "Abstract"-Section as our structure analysis does not consider abstracts and usually there are no cite-worthy contexts in the abstract.  
+Furthermore, we remove any citation contexts belonging to the "Abstract" section as our structure analysis does not consider abstracts and usually there are no cite-worthy contexts in the abstract.  
 Finally, the sentence needs to be cite-worthy and cite at least one of the considered papers in order to be added as a citation context in the dataset.
 
 The resulting output files are:

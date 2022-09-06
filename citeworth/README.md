@@ -1,14 +1,18 @@
-# Create the Dataset for the CiteWorth module from our preprocessed S2ORC dataset
+# Create the Dataset for the CiteWorth module from our Modified S2ORC dataset
 
 ## Usage
-The resulting files are output in this `dataset` directory.
+You may place the Modified S2ORC dataset into the `../data_s2orc` directory.
 
-There is no commandline interface provided. Please, uncomment the method call and set its parameters directly in the `citeworth_dataset.py` file.  
-You may place the S2ORC dataset into the `../data_s2orc` directory.
+There is no commandline interface provided.
+Please, uncomment the method call at the bottom of the `citeworth_dataset.py` file and set the respective parameters directly there.
+The parameters of the `create_citeworth_dataset` method are documented in the code. 
+
+The resulting files of the S2ORC_CiteWorth dataset are output in this `dataset` directory.
+For more information on the individual files, continue reading, please.
 
 ## Further Information
 We generally only consider papers that uniquely belong to the field of "Computer Science" and where the year of publication is known.  
-Further, we remove any entries belonging to the "Abstract"-Section as our structure analysis does not consider abstracts and usually there are no cite-worthy contexts in the abstract.  
+Furthermore, we remove any entries belonging to the "Abstract" section as our structure analysis does not consider abstracts and usually there are no cite-worthy sentences in the abstract.  
 Finally, it needs to be known for every sentence in a paragraph whether it is cite-worthy or not in order for the paragraph to be considered in the dataset.
 
 The resulting output files are:

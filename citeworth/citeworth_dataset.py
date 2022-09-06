@@ -1,5 +1,6 @@
 import json
 import pickle
+from typing import Set
 
 
 def _check_consistency_of_data(json_entry):
@@ -54,8 +55,20 @@ def _is_every_sample_non_conform(json_entry):
     return True
 
 
-def create_citeworth_dataset(path_to_s2orc_file, max_train_year, max_val_year,
-                             citing_papers=None, check_consistency_of_data=False):
+def create_citeworth_dataset(path_to_s2orc_file: str, max_train_year: int, max_val_year: int,
+                             citing_papers: Set[str] = None, check_consistency_of_data: bool = False):
+    """
+    Create the S2ORC_CiteWorth dataset from our Modified S2ORC dataset.
+
+    :param path_to_s2orc_file: path to our Modified S2ORC dataset jsonl file
+    :param max_train_year: all papers published in or before this year are part of the train split
+    :param max_val_year: all papers published between max_train_year (exclusive) and max_val_year (inclusive) are part
+                            of the validation split
+    :param citing_papers: set of paper ids
+                          if given, only papers with these ids are considered for the dataset creation
+    :param check_consistency_of_data: whether to perform additional checks on the labels in our Modified S2ORC dataset
+                                        (this check should be passed, otherwise there is an issue in our Modified S2ORC)
+    """
     with open(path_to_s2orc_file) as s2orc_file, \
             open('dataset/train.jsonl', 'w') as train_file, \
             open('dataset/val.jsonl', 'w') as val_file, \
