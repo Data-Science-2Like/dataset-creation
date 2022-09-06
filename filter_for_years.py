@@ -85,6 +85,10 @@ def filter_full_dataset(path_to_file, path_to_outfile):
                 if entry['samples'][idx]['ref_ids']:
                     entry['samples'][idx]['ref_ids'] = list(filter(check,entry['samples'][idx]['ref_ids']))
 
+            debug_id = '83458577'
+            if entry['paper_id'] == debug_id:
+                print(entry)
+
             out_file.write(f"{json.dumps(entry)}\n")
 
 

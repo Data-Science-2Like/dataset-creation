@@ -72,7 +72,7 @@ def main(fields,paper_wise= False):
 
             #if entry['paper_id'] not in candidate_papers:
             #    # only a citing paper
-
+            
 
             entry.pop('section_index', 'ignore')
             entry.pop('file_index', '')
@@ -80,6 +80,11 @@ def main(fields,paper_wise= False):
             entry.pop('original_text', '')
             entry.pop('samples', '')
             entry.pop('paper_abstract', '')
+
+            debug_id = '83458577'
+            if entry['paper_id'] == debug_id:
+                print(entry)
+
 
             sec_title = entry['section_title']
             # append sections citations if section already occured
